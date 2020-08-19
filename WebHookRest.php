@@ -4,7 +4,7 @@ namespace nav\B24;
 use Psr\Log\LoggerInterface;
 
 class WebHookRest extends BaseRest {
-    protected $baseUrl = 'https://*.bitrix24.ru/rest/*/*/';
+    protected $baseUrl;
     public $debug = false;
 
     /** @var WebhookCredentials\CredentialsInterface */

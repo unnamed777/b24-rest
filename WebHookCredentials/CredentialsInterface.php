@@ -19,9 +19,7 @@ interface CredentialsInterface
     public function getUserId(): string;
 
     /**
-     * @param string $domain
-     * @param string|int $userId
-     * @param string $token
+     * @param array $data
      */
-    public function set($domain, $userId, $token);
+    public function set($data);
 }

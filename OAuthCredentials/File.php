@@ -6,22 +6,34 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class File implements CredentialsInterface
 {
     /** @var string */
-    protected $file;
+    protected $filepath;
 
     /** @var array */
     protected $auth;
 
-    public function __construct(ParameterBagInterface $parameterBag)
+    public function __construct($params)
     {
-        $this->file = $parameterBag->get('b24.storage_file');
-        $this->auth = json_decode(@file_get_contents($this->file), true);
+        if (empty($params['filepath'])) {
+            throw new \InvalidArgumentException('"filepath" is empty');
+        }
+        
+        if (empty($params['clientId'])) {
+            throw new \InvalidArgumentException('"clientId" is empty');
+        }
+        
+        if (empty($params['clientSecret'])) {
+            throw new \InvalidArgumentException('"clientSecret" is empty');
+        }
+        
+        $this->filepath = $params['filepath'];
+        $this->auth = json_decode(@file_get_contents($this->filepath), true);
 
         if (!is_array($this->auth)) {
             $this->auth = [];
         }
 
-        $this->auth['clientId'] = $parameterBag->get('b24.client_id');
-        $this->auth['clientSecret'] = $parameterBag->get('b24.client_secret');
+        $this->auth['clientId'] = $params['clientId'];
+        $this->auth['clientSecret'] = $params['clientSecret'];
     }
 
     public function getClientId(): string
@@ -64,7 +76,7 @@ class File implements CredentialsInterface
             'expiresAt' => time() + $data['expires_in'],
         ];
 
-        file_put_contents($this->file, json_encode($newAuth));
+        file_put_contents($this->filepath, json_encode($newAuth));
         $this->auth = $newAuth;
     }
 

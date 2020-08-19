@@ -7,27 +7,19 @@ class Memory implements CredentialsInterface
     protected $file;
 
     /** @var array */
-    protected $auth;
+    protected $auth = [
+        'domain' => null,
+        'clientId' => null,
+        'clientSecret' => null,
+        'refreshToken' => null,
+        'expiresIn' => null,
+    ];
 
-    public function __construct($data)
+    public function __construct($params = [])
     {
-        if (empty($data['domain'])) {
-            throw new \InvalidArgumentException('"domain" is empty');
+        if (isset($params['domain']) && isset($params['access_token']) && isset($params['expires_in'])) {
+            $this->set($params);
         }
-
-        if (empty($data['access_token'])) {
-            throw new \InvalidArgumentException('"access_token" is empty');
-        }
-
-        if (empty($data['expires_in'])) {
-            throw new \InvalidArgumentException('"expires_in" is empty');
-        }
-
-        if (empty($data['refresh_token'])) {
-            $data['refresh_token'] = null;
-        }
-
-        $this->set($data);
     }
 
     public function getClientId(): string
@@ -62,11 +54,23 @@ class Memory implements CredentialsInterface
 
     public function set($data)
     {
+        if (empty($data['domain'])) {
+            throw new \InvalidArgumentException('"domain" is empty');
+        }
+
+        if (empty($data['access_token'])) {
+            throw new \InvalidArgumentException('"access_token" is empty');
+        }
+
+        if (empty($data['expires_in'])) {
+            throw new \InvalidArgumentException('"expires_in" is empty');
+        }
+        
         $newAuth = [
             //'clientId' => $this->auth['clientId'],
             'domain' => $data['domain'],
             'accessToken' => $data['access_token'],
-            'refreshToken' => $data['refresh_token'],
+            'refreshToken' => $data['refresh_token'] ?? null,
             'expiresAt' => time() + $data['expires_in'],
         ];
 
