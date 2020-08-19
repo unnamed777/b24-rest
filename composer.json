@@ -1,0 +1,18 @@
+{
+    "version": "0.0.1",
+    "name": "nav/b24-rest",
+    "description": "Bitrix24 Rest API",
+    "keywords": ["bitrix"],
+    "authors": [
+        {
+            "name": "Andrey Neyman",
+            "email": "andrey@neyman.tel"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "nav\\B24\\": ""
+        }
+    },
+    "minimum-stability": "dev"
+}
