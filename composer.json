@@ -9,6 +9,9 @@
             "email": "andrey@neyman.tel"
         }
     ],
+    "require": {
+        "psr/log": "^1.1"
+    },
     "autoload": {
         "psr-4": {
             "nav\\B24\\": ""
