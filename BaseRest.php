@@ -171,6 +171,45 @@ abstract class BaseRest {
 
         return $result;
     }
+    /**
+     * @param string $method
+     * @param array $data
+     */
+    public function addBatchCall($method, $data = [])
+    {
+        $this->batchCalls[] = [
+            'method' => $method,
+            'data' => $data
+        ];
+
+        return count($this->batchCalls) - 1;
+    }
+
+    /**
+     * Sets batch queue manually
+     *
+     * @param array $calls
+     */
+    public function setBatchQueue($calls)
+    {
+        $this->batchCalls = $calls;
+    }
+
+    public function processBatchCalls($halt = 0)
+    {
+        $commands = [];
+
+        foreach ($this->batchCalls as $key => $call) {
+            $commands[$key] = $call['method'] . '?' . http_build_query($call['data']);
+        }
+
+        $result = $this->call('batch', [
+            'halt' => $halt,
+            'cmd' => $commands,
+        ]);
+
+        return $result['result'];
+    }
 
     public function refreshToken()
     {
