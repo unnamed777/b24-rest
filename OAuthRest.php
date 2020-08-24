@@ -40,12 +40,12 @@ class OAuthRest extends BaseRest {
     {
         $curl = curl_init();
 
-        $url = sprintf(
-            'https://oauth.bitrix.info/oauth/token/?grant_type=refresh_token&client_id=%s&client_secret=%s&refresh_token=%s',
-            $this->credentials->getClientId(),
-            $this->credentials->getClientSecret(),
-            $this->credentials->getRefreshToken()
-        );
+        $url = 'https://oauth.bitrix.info/oauth/token/?' . http_build_query([
+            'grant_type' => 'refresh_token',
+            'client_id' => $this->credentials->getClientId(),
+            'client_secret' => $this->credentials->getClientSecret(),
+            'refresh_token' => $this->credentials->getRefreshToken(),
+        ]);
 
         curl_setopt_array($curl, array(
             CURLOPT_SSL_VERIFYPEER => 0,
@@ -74,5 +74,51 @@ class OAuthRest extends BaseRest {
     public function getCredentials()
     {
         return $this->credentials;
+    }
+
+    /**
+     * @param string $domain
+     * @param string $applicationId
+     * @param string $state
+     */
+    public static function redirectToAuth($domain, $applicationId, $state = null)
+    {
+        header('Location: https://' . $domain . '/oauth/authorize/?' . http_build_query([
+            'client_id' => $applicationId,
+            'state' => $state,
+        ]));
+        exit;
+    }
+
+    /**
+     * @param string $applicationId
+     * @param string $applicationSecret
+     * @param string $code
+     */
+    public function getFirstAccessToken($applicationId, $applicationSecret, $code)
+    {
+        $url = 'https://oauth.bitrix.info/oauth/token/?' . http_build_query([
+            'grant_type' => 'authorization_code',
+            'client_id' => $applicationId,
+            'client_secret' => $applicationSecret,
+            'code' => $code,
+        ]);
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_HEADER => 0,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_URL => $url,
+        ));
+
+        $result = json_decode(curl_exec($curl), true);
+        
+        if (!empty($result['error'])) {
+            throw new \Exception('[' . $result['error'] . '] ' . ($result['error_description'] ?? ''));
+        }
+        
+        return $result;
     }
 }
