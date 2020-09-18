@@ -131,6 +131,11 @@ abstract class BaseRest {
     public function fetch($method, $data = [])
     {
         $result = $this->call($method, $data);
+        
+        if (isset($result['error'])) {
+            throw new \Exception('B24 Error: ' . $result['error'] . ' ' . $result['error_description']);
+        }
+        
         return $result['result'];
     }
 
