@@ -52,7 +52,7 @@ abstract class BaseRest {
     {
         $result = $this->request($method, $data);
 
-        if (!empty($result['error'])) {
+        if (isset($result['error'])) {
             switch ($result['error']) {
                 case 'expired_token':
                     if ($this->refreshToken()) {
@@ -63,6 +63,10 @@ abstract class BaseRest {
                     break;
 
                 default:
+                    if ($this->logger) {
+                        $this->logger->error('B24 API error response', (array) $result);
+                    }
+                    
                     throw new \Exception('[' . $result['error'] . '] ' . $result['error_description']);
                     break;
             }
@@ -131,11 +135,6 @@ abstract class BaseRest {
     public function fetch($method, $data = [])
     {
         $result = $this->call($method, $data);
-        
-        if (isset($result['error'])) {
-            throw new \Exception('B24 Error: ' . $result['error'] . ' ' . $result['error_description']);
-        }
-        
         return $result['result'];
     }
 
@@ -156,11 +155,6 @@ abstract class BaseRest {
 
         while (true) {
             $stepResult = $this->call($method, $data);
-
-            if (isset($stepResult['error'])) {
-                throw new \Exception('B24 Error: ' . $stepResult['error'] . ' ' . $stepResult['error_description']);
-            }
-
             $result = array_merge($result, $stepResult['result']);
 
             if (!empty($limit) && count($result) >= $limit) {
