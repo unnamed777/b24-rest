@@ -170,18 +170,31 @@ abstract class BaseRest {
 
         return $result;
     }
+
     /**
      * @param string $method
      * @param array $data
+     * @param string|null $callId
+     * @return int|string call ID
      */
-    public function addBatchCall($method, $data = [])
+    public function addBatchCall($method, $data = [], $callId = null)
     {
-        $this->batchCalls[] = [
+        $entry = [
             'method' => $method,
             'data' => $data
         ];
 
-        return count($this->batchCalls) - 1;
+        $return = null;
+
+        if ($callId !== null) {
+            $this->batchCalls[$callId] = $entry;
+            $return = $callId;
+        } else {
+            $this->batchCalls[] = $entry;
+            $return = key(array_slice($this->batchCalls, -1));
+        }
+
+        return $return;
     }
 
     /**
