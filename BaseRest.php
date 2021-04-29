@@ -14,6 +14,9 @@ abstract class BaseRest {
 
     /** @var resource */
     protected $curl;
+    
+    /** @var bool */
+    protected $returnObjects = false;
 
     public function __construct(LoggerInterface $logger)
     {
@@ -38,9 +41,16 @@ abstract class BaseRest {
         static::$instance = $instance;
     }
 
-    public function setLogger($logger)
+    public function setLogger($logger): self
     {
         $this->logger = $logger;
+        return $this;
+    }
+    
+    public function setReturnObjects(bool $value): self
+    {
+        $this->returnObjects = $value;
+        return $this;
     }
 
     /**
@@ -51,14 +61,28 @@ abstract class BaseRest {
     public function call($method, $data = array())
     {
         $result = $this->request($method, $data);
+        
+        if (is_array($result)) {
+            if (!empty($result['error'])) {
+                $error = new StdClass;
+                $error->error = $result['error'];
+                $error->error_description = $result['error_description'];
+            }
+        } else {
+            if (!empty($result->error)) {
+                $error = new StdClass;
+                $error->error = $result->error;
+                $error->error_description = $result->error_description;
+            }
+        }
 
-        if (isset($result['error'])) {
-            switch ($result['error']) {
+        if (isset($error)) {
+            switch ($error->error) {
                 case 'expired_token':
                     if ($this->refreshToken()) {
                         $result = $this->request($method, $data);
                     } else {
-                        throw new \Exception('[' . $result['error'] . '] ' . $result['error_description']);
+                        throw new \Exception('[' . $error->error . '] ' . $error->error_description);
                     }
                     break;
 
@@ -67,7 +91,7 @@ abstract class BaseRest {
                         $this->logger->error('B24 API error response', (array) $result);
                     }
                     
-                    throw new \Exception('[' . $result['error'] . '] ' . $result['error_description']);
+                    throw new \Exception('[' . $error->error . '] ' . $error->error_description);
                     break;
             }
         }
@@ -115,7 +139,7 @@ abstract class BaseRest {
 
         curl_close($this->curl);
 
-        return json_decode($result, 1);
+        return json_decode($result, (int) !$this->returnObjects);
     }
 
     /**
@@ -155,14 +179,26 @@ abstract class BaseRest {
 
         while (true) {
             $stepResult = $this->call($method, $data);
-            $result = array_merge($result, $stepResult['result']);
+            $result = array_merge($result, is_array($stepResult) ? $stepResult['result'] : $stepResult->result);
 
             if (!empty($limit) && count($result) >= $limit) {
                 break;
             }
+            
+            $next = null;
+            
+            if (is_array($stepResult)) {
+                if (isset($stepResult['next'])) {
+                    $next = $stepResult['next'];
+                }
+            } else {
+                if (isset($stepResult->next)) {
+                    $next = $stepResult->next;
+                }
+            }
 
-            if (isset($stepResult['next'])) {
-                $data['start'] = $stepResult['next'];
+            if (isset($next)) {
+                $data['start'] = $next;
             } else {
                 break;
             }
@@ -220,7 +256,7 @@ abstract class BaseRest {
             'cmd' => $commands,
         ]);
 
-        return $result['result'];
+        return is_array($result) ? $result['result'] : $result->result;
     }
 
     public function refreshToken()
