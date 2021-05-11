@@ -14,7 +14,7 @@ abstract class BaseRest {
 
     /** @var resource */
     protected $curl;
-    
+
     /** @var bool */
     protected $returnObjects = false;
 
@@ -46,7 +46,7 @@ abstract class BaseRest {
         $this->logger = $logger;
         return $this;
     }
-    
+
     public function setReturnObjects(bool $value): self
     {
         $this->returnObjects = $value;
@@ -61,7 +61,7 @@ abstract class BaseRest {
     public function call($method, $data = array())
     {
         $result = $this->request($method, $data);
-        
+
         if (is_array($result)) {
             if (!empty($result['error'])) {
                 $error = new \StdClass;
@@ -90,7 +90,7 @@ abstract class BaseRest {
                     if ($this->logger) {
                         $this->logger->error('B24 API error response', (array) $result);
                     }
-                    
+
                     throw new \Exception('[' . $error->error . '] ' . $error->error_description);
                     break;
             }
@@ -153,7 +153,7 @@ abstract class BaseRest {
 
     /**
      * @param string $method
-     * @param array $data
+     * @param mixed $data
      * @return array
      */
     public function fetch($method, $data = [])
@@ -184,9 +184,9 @@ abstract class BaseRest {
             if (!empty($limit) && count($result) >= $limit) {
                 break;
             }
-            
+
             $next = null;
-            
+
             if (is_array($stepResult)) {
                 if (isset($stepResult['next'])) {
                     $next = $stepResult['next'];
