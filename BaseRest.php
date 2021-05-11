@@ -64,13 +64,13 @@ abstract class BaseRest {
         
         if (is_array($result)) {
             if (!empty($result['error'])) {
-                $error = new StdClass;
+                $error = new \StdClass;
                 $error->error = $result['error'];
                 $error->error_description = $result['error_description'];
             }
         } else {
             if (!empty($result->error)) {
-                $error = new StdClass;
+                $error = new \StdClass;
                 $error->error = $result->error;
                 $error->error_description = $result->error_description;
             }
