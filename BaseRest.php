@@ -63,7 +63,7 @@ abstract class BaseRest {
         $result = $this->request($method, $data);
 
         if (is_array($result)) {
-            if (!empty($result['error'])) {
+            if (!empty($result['error']) || !empty($result['error_description'])) {
                 $error = new \StdClass;
                 $error->error = $result['error'];
                 $error->error_description = $result['error_description'];
@@ -159,7 +159,7 @@ abstract class BaseRest {
     public function fetch($method, $data = [])
     {
         $result = $this->call($method, $data);
-        return $result['result'];
+        return isset($result['result']) ? $result['result'] : null;
     }
 
     /**
