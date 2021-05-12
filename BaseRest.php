@@ -154,7 +154,7 @@ abstract class BaseRest {
     /**
      * @param string $method
      * @param mixed $data
-     * @return array
+     * @return mixed
      */
     public function fetch($method, $data = [])
     {
